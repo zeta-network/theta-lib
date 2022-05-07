@@ -17,6 +17,8 @@ A javascript library for node.js and browsers to interact with Theta Wallets & T
 
 ## Install
 
+> 🚧 Note: The library is still under development and not available for use yet
+
 ```bash
 npm install --save theta-lib
 ```
