@@ -1,18 +1,22 @@
 # theta-lib
 
+[![NPM](https://img.shields.io/npm/v/theta-lib.svg)](https://www.npmjs.com/package/theta-lib)
+![npm bundle size](https://img.shields.io/bundlephobia/min/theta-lib?label=minified%20size&logo=%231081c1)
+
 A javascript library for node.js and browsers to interact with Theta Wallets & Theta blockchain
 
-[![NPM](https://img.shields.io/npm/v/theta-lib.svg)](https://www.npmjs.com/package/theta-lib) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
+> ⚠️ This library is currently being developed and maintained by a solo developer. **Please use it at your own risk!**
 
+## Features & Goals
+
+- [x] Support for both node.js & browser environnement
+- [ ] Out of the box connection with multiple Theta Wallets
+- [ ] A TypeScript alternative for `@thetalabs/theta.js` library
+- [ ] Useful utility functions to replace the need for `ethers.js` and `web3.js`
+- [ ] Boost developement speed for Dapps using Theta Blockchain
 
 ## Install
-
-> ⚠️ This library is developed by a solo developer and is not supported by ThetaLabs. **Please use it at your own risk!**
 
 ```bash
 npm install --save theta-lib
 ```
-
-## License
-
-MIT © 
