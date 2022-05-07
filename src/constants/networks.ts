@@ -20,3 +20,5 @@ export const networks = {
   [Mainnet.chainId]: Mainnet,
   [Testnet.chainId]: Testnet,
 };
+
+export const chainIds = Object.keys(networks);

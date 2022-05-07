@@ -2,13 +2,15 @@ import test from 'ava';
 import '../mocks/_metamask-wallet.spec';
 import '../mocks/_localstorage.spec';
 
+import { chainIds } from '../constants/networks';
+
 import { getAccounts, getNetwork, isInstalled, setNetwork } from './metamask';
 
 import { connect } from './index';
 
 test('connect & get accounts', async (t) => {
   // connect
-  await connect('metamask');
+  await connect('metamask', chainIds[1]);
   // get accounts
   const accounts = await getAccounts();
   t.deepEqual(accounts, ['0x0', '0x1']);

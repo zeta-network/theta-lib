@@ -54,3 +54,13 @@ export const setNetwork = async (chainId: string): Promise<void> => {
     }
   }
 };
+
+export const getBalance = async (address: string): Promise<number> => {
+  if (typeof window.ethereum !== 'undefined') {
+    return window.ethereum.request({
+      method: 'eth_getBalance',
+      params: [address, 'latest'],
+    });
+  }
+  return 0;
+};
