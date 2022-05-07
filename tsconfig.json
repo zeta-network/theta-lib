@@ -14,7 +14,7 @@
     "strict": true /* Enable all strict type-checking options. */,
 
     /* Strict Type-Checking Options */
-    // "noImplicitAny": true /* Raise error on expressions and declarations with an implied 'any' type. */,
+    "noImplicitAny": false /* Raise error on expressions and declarations with an implied 'any' type. */,
     // "strictNullChecks": true /* Enable strict null checks. */,
     // "strictFunctionTypes": true /* Enable strict checking of function types. */,
     // "strictPropertyInitialization": true /* Enable strict checking of property initialization in classes. */,
@@ -39,7 +39,7 @@
 
     "lib": ["es2017", "dom"],
     "types": ["node"],
-    "typeRoots": ["node_modules/@types", "src/types"]
+    "typeRoots": ["node_modules/@types", "src/types"],
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules/**"],
