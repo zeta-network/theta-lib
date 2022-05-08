@@ -15,19 +15,26 @@ type logged_user_account = {
   readonly chainId: string;
 };
 
-const getCachedUser = () => {
+const walletEngines = {
+  metamask: metamask,
+  thetawallet: null,
+};
+
+function getCachedUser() {
   const user = localStorage.getItem('theta_lib_connected_user');
   if (user) {
     return JSON.parse(user);
   }
   return false;
-};
-const setCachedUser = (user: logged_user_account) => {
+}
+
+function setCachedUser(user: logged_user_account) {
   return localStorage.setItem('theta_lib_connected_user', JSON.stringify(user));
-};
-const removeCachedUser = () => {
+}
+
+function removeCachedUser() {
   return localStorage.removeItem('theta_lib_connected_user');
-};
+}
 
 /**
  * A sample function to test the project structure
@@ -52,10 +59,10 @@ const removeCachedUser = () => {
  * @returns "connected"
  */
 
-export const connect = async (
+async function connect(
   wallet: 'metamask' | 'thetawallet',
   chainId: string = chainIds[0]
-) => {
+) {
   if (
     wallet.toLowerCase() != 'thetawallet' ||
     wallet.toLowerCase() != 'metamask'
@@ -98,14 +105,14 @@ export const connect = async (
 
   // return user
   return user;
-};
+}
 
-export const disconnect = () => {
+async function disconnect() {
   removeCachedUser();
   return true;
-};
+}
 
-export const getAccounts = async (): Promise<readonly string[]> => {
+async function getAccounts(): Promise<readonly string[]> {
   switch (getCachedUser()?.wallet_name) {
     case 'metamask':
       return metamask.getAccounts();
@@ -114,9 +121,9 @@ export const getAccounts = async (): Promise<readonly string[]> => {
       return [''];
   }
   return [];
-};
+}
 
-export const getBalance = async (address?: string): Promise<number> => {
+async function getBalance(address?: string): Promise<number> {
   switch (getCachedUser()?.wallet_name) {
     case 'metamask':
       return metamask.getBalance(address ?? getCachedUser()?.address);
@@ -125,9 +132,9 @@ export const getBalance = async (address?: string): Promise<number> => {
       return 0;
   }
   return 0;
-};
+}
 
-export const isInstalled = async (): Promise<boolean> => {
+async function isInstalled(): Promise<boolean> {
   switch (getCachedUser()?.wallet_name) {
     case 'metamask':
       return metamask.isInstalled();
@@ -136,9 +143,9 @@ export const isInstalled = async (): Promise<boolean> => {
       return false;
   }
   return false;
-};
+}
 
-export const getNetwork = async (): Promise<string> => {
+async function getNetwork(): Promise<string> {
   switch (getCachedUser()?.wallet_name) {
     case 'metamask':
       return metamask.getNetwork();
@@ -147,9 +154,9 @@ export const getNetwork = async (): Promise<string> => {
       return '0x0';
   }
   return '0x0';
-};
+}
 
-export const setNetwork = async (chainId: string) => {
+async function setNetwork(chainId: string) {
   switch (getCachedUser()?.wallet_name) {
     case 'metamask':
       return metamask.setNetwork(chainId);
@@ -158,14 +165,26 @@ export const setNetwork = async (chainId: string) => {
       return false;
   }
   return false;
-};
+}
 
 // get current account signer from the wallet
-export const getSigner = async () => {
+async function getSigner() {
   return 'signer';
-};
+}
 
 // get current account provider from the wallet
-export const getProvider = async () => {
+async function getProvider() {
   return 'provider';
+}
+
+exports = {
+  connect,
+  disconnect,
+  getAccounts,
+  getBalance,
+  isInstalled,
+  getNetwork,
+  setNetwork,
+  getSigner,
+  getProvider,
 };
