@@ -22,3 +22,5 @@ export const networks = {
 };
 
 export const chainIds = Object.keys(networks);
+
+export type ChainId = keyof typeof networks;

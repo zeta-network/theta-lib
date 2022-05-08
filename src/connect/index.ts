@@ -1,190 +1,116 @@
-if (typeof window == 'undefined') {
-  console.error(
-    'Warning: theta-lib.wallet is running in a non-browser environment. Most functions will not work.'
-  );
+import { WalletEngine, WalletEngines, WalletNames } from './wallet-engine';
+
+const LOCAL_STORAGE_KEY = '_wallet_connection';
+
+export interface AccountBalance {
+  tfuel: string;
+  theta: string;
+}
+export interface Account {
+  accountId: string;
+  balance: AccountBalance;
+  networkId: string;
 }
 
-import { chainIds } from '../constants/networks';
+export class WalletConnection {
+  /** @hidden */
+  _walletId: string;
 
-import * as metamask from './metamask';
+  /** @hidden */
+  _networkId: string;
 
-type logged_user_account = {
-  readonly address: string;
-  readonly balance: number;
-  readonly wallet_name: string;
-  readonly chainId: string;
-};
+  /** @hidden */
+  _userAccount: Account | null;
 
-const walletEngines = {
-  metamask: metamask,
-  thetawallet: null,
-};
+  /** @hidden */
+  _engine: WalletEngine;
 
-function getCachedUser() {
-  const user = localStorage.getItem('theta_lib_connected_user');
-  if (user) {
-    return JSON.parse(user);
-  }
-  return false;
-}
+  constructor(walletId: WalletNames, networkId: string) {
+    this._walletId = walletId;
+    this._networkId = networkId;
+    this._engine = new WalletEngines[walletId]();
 
-function setCachedUser(user: logged_user_account) {
-  return localStorage.setItem('theta_lib_connected_user', JSON.stringify(user));
-}
-
-function removeCachedUser() {
-  return localStorage.removeItem('theta_lib_connected_user');
-}
-
-/**
- * A sample function to test the project structure
- *
- * @note should always be called first
- *
- * ### Example (es imports)
- * ```js
- * import { wallet } from 'theta-lib';
- * console.log(wallet.connect())
- * // => "connected"
- * ```
- *
- * ### Example (commonjs)
- * ```js
- * var wallet = require('theta-lib').wallet;
- * console.log(wallet.connect());
- * // => "connected"
- * ```
- *
- * @param {string} wallet - The name of the wallet to connect to
- * @returns "connected"
- */
-
-async function connect(
-  wallet: 'metamask' | 'thetawallet',
-  chainId: string = chainIds[0]
-) {
-  if (
-    wallet.toLowerCase() != 'thetawallet' ||
-    wallet.toLowerCase() != 'metamask'
-  ) {
-    return false;
+    const storedAccount = window.localStorage.getItem(LOCAL_STORAGE_KEY);
+    this._userAccount = storedAccount ? JSON.parse(storedAccount) : null;
   }
 
-  // check if wallet is installed
-  if (!(await isInstalled())) {
-    return false;
+  /**
+   * Returns true, if the user authorized the wallet connection.
+   * @example
+   * ```ts
+   * const wallet = new WalletConnection("metamask", 'testnet');
+   * wallet.isSignedIn();
+   * ```
+   */
+  isSignedIn(): boolean {
+    return !!this._userAccount?.accountId;
   }
 
-  // check if chainId is valid
-  if (!((await getNetwork()) != chainId)) {
-    // try to switch to chainId
-    await setNetwork(chainId);
+  /**
+   * Returns authorized Account ID.
+   * @example
+   * ```ts
+   * const wallet = new WalletConnection("metamask", 'testnet');
+   * wallet.getAccountId();
+   * ```
+   */
+  getAccountId(): string {
+    return this._userAccount?.accountId || '';
+  }
 
-    // check if chainId is valid again
-    if (!((await getNetwork()) != chainId)) {
-      return false;
+  /**
+   * Requests the user accounts from the wallet.
+   * @example
+   * ```ts
+   * const wallet = new WalletConnection("metamask", "testnet");
+   * wallet.requestSignIn();
+   * ```
+   */
+  //   TODO: needs work
+  async requestSignIn() {
+    const accounts = await this._engine.getAccounts();
+    if (accounts.length > 0) {
+      this._userAccount = {
+        accountId: accounts[0],
+        balance: {
+          tfuel: await this._engine.getBalance(accounts[0]),
+          theta: 'unknown',
+        },
+        networkId: this._networkId,
+      };
+      window.localStorage.setItem(
+        LOCAL_STORAGE_KEY,
+        JSON.stringify(this._userAccount)
+      );
+      return this._userAccount;
+    } else {
+      return null;
     }
   }
 
-  // get user accounts
-  const accounts = await getAccounts();
+  /**
+   * Requests the user to sign a transaction.
+   */
+  //   async _requestSignTransaction({
+  //     transactions,
+  //     meta,
+  //     callback,
+  //   }: any): Promise<void> {}
 
-  // get user balance
-  const balance = await getBalance(accounts[0]);
-
-  // user object
-  const user: logged_user_account = {
-    address: accounts[0],
-    balance,
-    wallet_name: wallet.toLowerCase(),
-    chainId: chainId,
-  };
-
-  // save user in localStorage
-  setCachedUser(user);
-
-  // return user
-  return user;
-}
-
-async function disconnect() {
-  removeCachedUser();
-  return true;
-}
-
-async function getAccounts(): Promise<readonly string[]> {
-  switch (getCachedUser()?.wallet_name) {
-    case 'metamask':
-      return metamask.getAccounts();
-
-    case 'thetawallet':
-      return [''];
+  /**
+   * Sign out from the current account
+   * @example
+   * wallet.signOut();
+   */
+  signOut(): void {
+    this._userAccount = null;
+    window.localStorage.removeItem(LOCAL_STORAGE_KEY);
   }
-  return [];
-}
 
-async function getBalance(address?: string): Promise<number> {
-  switch (getCachedUser()?.wallet_name) {
-    case 'metamask':
-      return metamask.getBalance(address ?? getCachedUser()?.address);
-
-    case 'thetawallet':
-      return 0;
+  /**
+   * Returns the current connected wallet account
+   */
+  account(): Account | null {
+    return this._userAccount;
   }
-  return 0;
 }
-
-async function isInstalled(): Promise<boolean> {
-  switch (getCachedUser()?.wallet_name) {
-    case 'metamask':
-      return metamask.isInstalled();
-
-    case 'thetawallet':
-      return false;
-  }
-  return false;
-}
-
-async function getNetwork(): Promise<string> {
-  switch (getCachedUser()?.wallet_name) {
-    case 'metamask':
-      return metamask.getNetwork();
-
-    case 'thetawallet':
-      return '0x0';
-  }
-  return '0x0';
-}
-
-async function setNetwork(chainId: string) {
-  switch (getCachedUser()?.wallet_name) {
-    case 'metamask':
-      return metamask.setNetwork(chainId);
-
-    case 'thetawallet':
-      return false;
-  }
-  return false;
-}
-
-// get current account signer from the wallet
-async function getSigner() {
-  return 'signer';
-}
-
-// get current account provider from the wallet
-async function getProvider() {
-  return 'provider';
-}
-
-exports = {
-  connect,
-  disconnect,
-  getAccounts,
-  getBalance,
-  isInstalled,
-  getNetwork,
-  setNetwork,
-  getSigner,
-  getProvider,
-};
